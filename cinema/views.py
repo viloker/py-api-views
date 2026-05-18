@@ -79,7 +79,11 @@ class ActorList(GenericAPIView,
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        serializer = ActorSerializer(data=request.data)
+        if serializer.is_valid():
+            return self.create(request, *args, **kwargs)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ActorDetail(GenericAPIView,
@@ -93,10 +97,18 @@ class ActorDetail(GenericAPIView,
         return self.retrieve(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+        actor = Actor.objects.get(pk=kwargs.get("pk"))
+        serializer = ActorSerializer(actor, data=request.data)
+        if serializer.is_valid():
+            return self.update(request, *args, **kwargs)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
+        actor = Actor.objects.get(pk=kwargs.get("pk"))
+        serializer = ActorSerializer(actor, data=request.data, partial=True)
+        if serializer.is_valid():
+            return self.partial_update(request, *args, **kwargs)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
